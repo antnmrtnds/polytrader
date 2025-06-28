@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polymarket Ether Log Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 32px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    pre {
+      background: #222;
+      color: #eee;
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    .section {
+      margin-bottom: 32px;
+    }
+    .section h2 {
+      color: #444;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    tr:nth-child(even) {
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Polymarket Ether Log</h1>
+    <div id="content">
+      <p>Loading data...</p>
+    </div>
+  </div>
+  <script>
+    fetch('ether_log.json')
+      .then(response => response.json())
+      .then(data => {
+        const content = document.getElementById('content');
+        content.innerHTML = '';
+        // Wallet Info
+        content.innerHTML += `<div class='section'><h2>Wallet Info</h2><b>Address:</b> ${data.wallet_address}<br><b>MATIC:</b> ${data.balances.matic}<br><b>USDC:</b> ${data.balances.usdc}</div>`;
+        // Portfolio Summary
+        const pf = data.polymarket_portfolio;
+        content.innerHTML += `<div class='section'><h2>Portfolio Summary</h2>
+          <table>
+            <tr><th>Total Positions</th><td>${pf.total_positions}</td></tr>
+            <tr><th>Total Position Value</th><td>${pf.total_position_value}</td></tr>
+            <tr><th>Total Unrealized PnL</th><td>${pf.total_unrealized_pnl}</td></tr>
+            <tr><th>Total Realized PnL</th><td>${pf.total_realized_pnl}</td></tr>
+            <tr><th>Total Trades</th><td>${pf.total_trades}</td></tr>
+          </table>
+        </div>`;
+        // Top Positions
+        if (data.positions && data.positions.length) {
+          let posRows = data.positions.map(pos => `<tr><td>${pos.marketTitle || ''}</td><td>${pos.currentValue || 0}</td><td>${pos.cashPnl || 0}</td><td>${pos.realizedPnl || 0}</td></tr>`).join('');
+          content.innerHTML += `<div class='section'><h2>Top 5 Positions</h2>
+            <table>
+              <tr><th>Market</th><th>Current Value</th><th>Unrealized PnL</th><th>Realized PnL</th></tr>
+              ${posRows}
+            </table>
+          </div>`;
+        }
+        // Recent Trades
+        if (data.recent_trades && data.recent_trades.length) {
+          let tradeRows = data.recent_trades.map(tr => `<tr><td>${tr.marketTitle || ''}</td><td>${tr.type || ''}</td><td>${tr.amount || 0}</td><td>${tr.price || 0}</td><td>${tr.timestamp || ''}</td></tr>`).join('');
+          content.innerHTML += `<div class='section'><h2>Recent Trades</h2>
+            <table>
+              <tr><th>Market</th><th>Type</th><th>Amount</th><th>Price</th><th>Timestamp</th></tr>
+              ${tradeRows}
+            </table>
+          </div>`;
+        }
+        // Raw JSON
+        content.innerHTML += `<div class='section'><h2>Raw JSON</h2><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+      })
+      .catch(err => {
+        document.getElementById('content').innerHTML = '<p style="color:red">Failed to load ether_log.json</p>';
+      });
+  </script>
+</body>
+</html> 

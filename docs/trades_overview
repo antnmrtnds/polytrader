@@ -1,0 +1,244 @@
+Trades Overview
+​
+Overview
+All historical trades can be fetched via the Polymarket CLOB REST API. A trade is initiated by a “taker” who creates a marketable limit order. This limit order can be matched against one or more resting limit orders on the associated book. A trade can be in various states as described below. Note: in some cases (due to gas limitations) the execution of a “trade” must be broken into multiple transactions which case separate trade entities will be returned. To associate trade entities, there is a bucket_index field and a match_time field. Trades that have been broken into multiple trade objects can be reconciled by combining trade objects with the same market_order_id, match_time and incrementing bucket_index’s into a top level “trade” client side.
+
+​
+Statuses
+Status	Terminal?	Description
+MATCHED	no	trade has been matched and sent to the executor service by the operator, the executor service submits the trade as a transaction to the Exchange contract
+MINED	no	trade is observed to be mined into the chain, no finality threshold established
+CONFIRMED	yes	trade has achieved strong probabilistic finality and was successful
+RETRYING	no	trade transaction has failed (revert or reorg) and is being retried/resubmitted by the operator
+FAILED	yes	trade has failed and is not being retried
+
+
+Get Trades
+This endpoint requires a L2 Header.
+Get trades for the authenticated user based on the provided filters.
+
+HTTP REQUEST
+
+GET /<clob-endpoint>/data/trades
+
+​
+Request Parameters
+Name	Required	Type	Description
+id	no	string	id of trade to fetch
+taker	no	string	address to get trades for where it is included as a taker
+maker	no	string	address to get trades for where it is included as a maker
+market	no	string	market for which to get the trades (condition ID)
+before	no	string	unix timestamp representing the cutoff up to which trades that happened before then can be included
+after	no	string	unix timestamp representing the cutoff for which trades that happened after can be included
+​
+Response Format
+Name	Type	Description
+null	Trade[]	list of trades filtered by query parameters
+A Trade object is of the form:
+
+Name	Type	Description
+id	string	trade id
+taker_order_id	string	hash of taker order (market order) that catalyzed the trade
+market	string	market id (condition id)
+asset_id	string	asset id (token id) of taker order (market order)
+side	string	buy or sell
+size	string	size
+fee_rate_bps	string	the fees paid for the taker order expressed in basic points
+price	string	limit price of taker order
+status	string	trade status (see above)
+match_time	string	time at which the trade was matched
+last_update	string	timestamp of last status update
+outcome	string	human readable outcome of the trade
+maker_address	string	funder address of the taker of the trade
+owner	string	api key of taker of the trade
+transaction_hash	string	hash of the transaction where the trade was executed
+bucket_index	integer	index of bucket for trade in case trade is executed in multiple transactions
+maker_orders	MakerOrder[]	list of the maker trades the taker trade was filled against
+type	string	side of the trade: TAKER or MAKER
+A MakerOrder object is of the form:
+
+Name	Type	Description
+order_id	string	id of maker order
+maker_address	string	maker address of the order
+owner	string	api key of the owner of the order
+matched_amount	string	size of maker order consumed with this trade
+fee_rate_bps	string	the fees paid for the taker order expressed in basic points
+price	string	price of maker order
+asset_id	string	token/asset id
+outcome	string	human readable outcome of the maker order
+side	string	the side of the maker order. Can be buy or sell
+
+from py_clob_client.clob_types import TradeParams
+
+resp = client.get_trades(
+    TradeParams(
+        maker_address=client.get_address(),
+        market="0xbd31dc8a20211944f6b70f31557f1001557b59905b7738480ca09bd4532f84af",
+    ),
+)
+print(resp)
+print("Done!")
+
+
+Get Trades (Data-API)
+Alternative endpoint to the GAMMA Get-Trades. Allows users to get trades from all markets and all users. Ordered by timestamp in descending order(most recent trade first).
+
+GET
+/
+trades
+
+Try it
+Polymarket provides a simple alternative to the CLOB API for accessing trade data through a basic GET request that doesn’t require L2 headers. This endpoint allows users to retrieve trades from all markets and users. See the schema and example response below for implementation details.
+
+Query Parameters
+​
+user
+string
+The address of the user in question
+
+​
+limit
+integerdefault:100
+The max number of trades to return, defaults to 100, max 500
+
+Required range: 1 <= x <= 500
+​
+offset
+integerdefault:0
+The starting index for pagination
+
+Required range: x >= 0
+​
+takerOnly
+booleandefault:true
+Flag that determines whether to return only taker orders. Defaults to true. Otherwise return maker and taker orders
+
+​
+filterType
+enum<string>
+Flag indicating whether to filter trades by a parameter
+
+Available options: CASH, TOKENS 
+​
+filterAmount
+number
+The amount to filter by. Related to filterType above
+
+​
+market
+string
+The condition ID of the market in question. Supports comma separated values
+
+​
+side
+enum<string>
+The side of the trade
+
+Available options: BUY, SELL 
+Response
+200 - application/json
+Successful response with trades data
+
+​
+proxyWallet
+string
+The proxy wallet address
+
+​
+side
+enum<string>
+The side of the trade
+
+Available options: BUY, SELL 
+​
+asset
+string
+The asset identifier (large number as string)
+
+​
+conditionId
+string
+The condition ID
+
+​
+size
+number
+The size of the trade
+
+​
+price
+number
+The price of the trade
+
+​
+timestamp
+integer
+Unix timestamp of the trade
+
+​
+title
+string
+The title of the market
+
+​
+slug
+string
+URL-friendly slug for the market
+
+​
+icon
+string
+URL to the market icon
+
+​
+eventSlug
+string
+URL-friendly slug for the event
+
+​
+outcome
+string
+The outcome of the trade
+
+​
+outcomeIndex
+integer
+The index of the outcome
+
+​
+name
+string
+The name of the trader
+
+​
+pseudonym
+string
+The pseudonym of the trader
+
+​
+bio
+string
+Biography of the trader
+
+​
+profileImage
+string
+URL to the trader's profile image
+
+​
+profileImageOptimized
+string
+URL to the optimized profile image
+
+​
+transactionHash
+string
+The transaction hash
+
+import requests
+
+url = "https://data-api.polymarket.com/trades"
+
+response = requests.request("GET", url)
+
+print(response.text)

@@ -1,0 +1,25 @@
+[
+    {
+        "proxyWallet": "0x80cd8310aa624521e9e1b2b53b568cafb0ef0273",
+        "timestamp": 1751060317,
+        "conditionId": "0x814e71c2b39d726d4641fad1148ff1877f45cf3f63094bdba6f561bcf7f13fb6",
+        "type": "TRADE",
+        "size": 76.333332,
+        "usdcSize": 58.013333,
+        "transactionHash": "0x3b5ccb1da3e73a6bc29c9ad9d9d8b3182d05764166ebd1a6ff553bf8538c6857",
+        "price": 0.7600000089082971,
+        "asset": "54840652329324136138304464254465748520121792292727147121994127848808663182319",
+        "side": "BUY",
+        "outcomeIndex": 0,
+        "title": "XRP Up or Down on June 28?",
+        "slug": "xrp-up-or-down-on-june-28",
+        "icon": "https://polymarket-upload.s3.us-east-2.amazonaws.com/XRP+fullsize.PNG",
+        "eventSlug": "xrp-up-or-down-on-june-28",
+        "outcome": "Up",
+        "name": "HaileyWelch",
+        "pseudonym": "Greedy-Afterthought",
+        "bio": "",
+        "profileImage": "https://polymarket-upload.s3.us-east-2.amazonaws.com/profile-image-2729294.jpg",
+        "profileImageOptimized": ""
+    }
+]
